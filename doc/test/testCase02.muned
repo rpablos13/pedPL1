@@ -1,0 +1,10 @@
+MODULE dos;
+(* simple. salida de texto*)
+
+  BEGIN
+   
+    WRITESTRING("Hola");
+    WRITELN;    
+    WRITESTRING("Mundo!");
+    
+  END dos;
