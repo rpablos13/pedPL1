@@ -52,8 +52,53 @@ parser code {:
 
 // Declaración de terminales (Ejemplo)
 
-terminal Token PLUS;
+terminal Token COMILLAS;
+terminal Token OPEN_PAR;
+terminal Token CLOSE_PAR;
+terminal Token OPEN_CORCH;
+terminal Token CLOSE_CORCH;
+terminal Token OPEN_COMENT;
+terminal Token CLOSE_COMENT;
+terminal Token COMA;
+terminal Token PUNTO_COMA;
+terminal Token DOS_PUNTOS;
+terminal Token MULT;
 terminal Token MINUS;
+terminal Token MAYOR;
+terminal Token ARRAY;
+terminal Token BEGIN;
+terminal Token BOOLEAN;
+terminal Token CONST;
+terminal Token DO;
+terminal Token ELSE;
+terminal Token END;
+terminal Token FALSE;
+terminal Token FOR;
+terminal Token IF;
+terminal Token INTEGER;
+terminal Token MODULE;
+terminal Token NOT;
+terminal Token OF;
+terminal Token OR;
+terminal Token PROCEDURE;
+terminal Token RETURN;
+terminal Token THEN;
+terminal Token TO;
+terminal Token TRUE;
+terminal Token TYPE;
+terminal Token VAR;
+terminal Token WRITEINT;
+terminal Token WRITELN;
+terminal Token WRITESTRING;
+terminal Token NUM;
+terminal Token STRING;
+terminal Token IDEN;
+terminal Token ASIGN;
+terminal Token ID;
+terminal Token EQUAL;
+terminal Token DOT;
+
+
 // ...
 
 
@@ -62,12 +107,42 @@ terminal Token MINUS;
 
 non terminal  			program;
 non terminal Axiom		axiom;
+non terminal 			inicio,sentPrint,lambda,cuerpo;
+non terminal 			fin;
+non terminal			writeStr;
+non terminal			writeL;
+non terminal			writeInt;
+non terminal			expr;
+non terminal 			operador;
+non terminal			declarVar;
+non terminal			declarations;
+non terminal			igualations;
+non terminal			typeOfVar;
+non terminal			booleans;
+non terminal			operation;
+non terminal			arithmeticExpr;
+non terminal			asignValue;
+non terminal			bodyOperations;
+non terminal			intValue;
+non terminal			variousOperations;
+non terminal			array;
+non terminal			vector;
+non terminal			vectorOperation;
+non terminal			simpleVector;
+non terminal			endProgram;
+non terminal			function;
+non terminal			declarationFuntion;
+non terminal			beginFunction;
+non terminal			endFunction;
+non terminal			initialDeclarations;
+non terminal			functionReturn;
+non terminal			bodyFunction;
+non terminal			otherFuncionDeclarations;
 // ...
 
 
 // Declaración de relaciones de precedencia
-precedence left     PLUS,
-                    MINUS;
+precedence left     MINUS;
 // ...
 
 // Declaración de reglas de producción
@@ -94,4 +169,63 @@ program ::=
    :};
 
 
-axiom ::= ;
+axiom::= inicio declarVar BEGIN cuerpo fin | inicio BEGIN fin;
+lambda::= ;
+inicio::= MODULE IDEN PUNTO_COMA;
+fin::= endProgram;
+cuerpo::= sentPrint | bodyOperations | vector | vectorOperation | cuerpo bodyOperations | cuerpo sentPrint | cuerpo vector | cuerpo vectorOperation;
+initialDeclarations::= declarVar | function;
+
+
+sentPrint::= writeStr | writeL | writeInt;
+
+writeStr::= WRITESTRING OPEN_PAR STRING CLOSE_PAR PUNTO_COMA;
+writeL::= WRITELN PUNTO_COMA;
+writeInt::= WRITEINT OPEN_PAR intValue CLOSE_PAR PUNTO_COMA;
+
+intValue::= NUM MINUS NUM | IDEN | simpleVector;
+
+booleans::= TRUE | FALSE;
+operation::= MULT | MINUS | MAYOR | EQUAL;
+arithmeticExpr::= IDEN operation IDEN PUNTO_COMA;
+
+asignValue::= NUM | arithmeticExpr | booleans | IDEN;
+
+bodyOperations::= IDEN ASIGN asignValue PUNTO_COMA | IDEN ASIGN OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA;
+
+simpleVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH;
+vector::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN NUM PUNTO_COMA;
+vectorOperation::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN IDEN OPEN_CORCH NUM CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH CLOSE_CORCH PUNTO_COMA;
+
+
+declarationFuntion::= declarVar declarations IDEN OPEN_PAR declarVar CLOSE_PAR igualations typeOfVar PUNTO_COMA;
+otherFuncionDeclarations::= declarVar;
+beginFunction::= BEGIN bodyOperations RETURN;
+bodyFunction::= bodyOperations | bodyFunction functionReturn;
+functionReturn::= RETURN IDEN PUNTO_COMA;
+endFunction::= END IDEN PUNTO_COMA;
+
+function::= declarationFuntion otherFuncionDeclarations beginFunction;
+
+declarations::= CONST | VAR | TYPE | PROCEDURE;
+igualations::= DOS_PUNTOS | EQUAL;
+typeOfVar::= NUM | INTEGER | BOOLEAN;
+
+array::= ARRAY OPEN_CORCH NUM DOT DOT NUM CLOSE_CORCH OF INTEGER PUNTO_COMA;
+expr::= ID | NUM | expr operador expr | NOT expr;
+operador::= MINUS | MULT | OR | EQUAL;
+declarVar::= declarations IDEN igualations typeOfVar PUNTO_COMA | 
+			 declarVar declarations IDEN igualations typeOfVar PUNTO_COMA |
+			 declarVar declarations IDEN igualations IDEN PUNTO_COMA |
+			 declarVar IDEN igualations typeOfVar PUNTO_COMA |
+			 declarations IDEN igualations array |
+			 IDEN igualations typeOfVar PUNTO_COMA IDEN igualations typeOfVar|
+			 function;
+
+
+/*****************************************************************/
+/*************************Errores*********************************/
+/*****************************************************************/
+
+endProgram::= END IDEN PUNTO_COMA|error  {:syntaxErrorManager.syntaxError("Error. El programa debe terminar con un END identificador PUNTO_COMA");:};
+
