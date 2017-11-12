@@ -70,7 +70,7 @@ fin = "fin"{ESPACIO_BLANCO}
     "(*"                { commentCount++;
                 yybegin(COMMENT);}
     "*)"               {lexicalErrorManager.lexicalError(createError("Error Lexico. No existe apertura en la Línea: "+(yyline + 1)));}
-    ","                { return createToken(sym.COMA); }
+    ","                { return createToken(sym.COMMA); }
     ";"                { return createToken(sym.PUNTO_COMA); }
     ":="                { return createToken(sym.ASIGN); }
     ":"                { return createToken(sym.DOS_PUNTOS); }

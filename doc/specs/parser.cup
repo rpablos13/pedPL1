@@ -59,7 +59,7 @@ terminal Token OPEN_CORCH;
 terminal Token CLOSE_CORCH;
 terminal Token OPEN_COMENT;
 terminal Token CLOSE_COMENT;
-terminal Token COMA;
+terminal Token COMMA;
 terminal Token PUNTO_COMA;
 terminal Token DOS_PUNTOS;
 terminal Token MULT;
@@ -97,6 +97,7 @@ terminal Token ASIGN;
 terminal Token ID;
 terminal Token EQUAL;
 terminal Token DOT;
+terminal Token ESPACIO_BLANCO;
 
 
 // ...
@@ -107,7 +108,7 @@ terminal Token DOT;
 
 non terminal  			program;
 non terminal Axiom		axiom;
-non terminal 			inicio,sentPrint,lambda,cuerpo;
+non terminal 			inicio,sentPrint, lambda,cuerpo;
 non terminal 			fin;
 non terminal			writeStr;
 non terminal			writeL;
@@ -138,6 +139,13 @@ non terminal			initialDeclarations;
 non terminal			functionReturn;
 non terminal			bodyFunction;
 non terminal			otherFuncionDeclarations;
+non terminal			ends;
+non terminal			ifCode;
+non terminal			logicExpression;
+non terminal			sentencesIf;
+non terminal			forCode;
+non terminal			finalExpression;
+non terminal			sentencesFor;
 // ...
 
 
@@ -169,12 +177,14 @@ program ::=
    :};
 
 
-axiom::= inicio declarVar BEGIN cuerpo fin | inicio BEGIN fin;
-lambda::= ;
+ends::= END PUNTO_COMA;
+
+axiom::= inicio BEGIN fin | inicio declarVar BEGIN cuerpo fin | inicio BEGIN cuerpo fin;
 inicio::= MODULE IDEN PUNTO_COMA;
-fin::= endProgram;
-cuerpo::= sentPrint | bodyOperations | vector | vectorOperation | cuerpo bodyOperations | cuerpo sentPrint | cuerpo vector | cuerpo vectorOperation;
-initialDeclarations::= declarVar | function;
+fin::= END IDEN PUNTO_COMA;
+cuerpo::= sentPrint | bodyOperations | vector | vectorOperation | ifCode | forCode | 
+		  cuerpo bodyOperations | cuerpo sentPrint | cuerpo vector | cuerpo vectorOperation | cuerpo ifCode |
+		  cuerpo forCode;
 
 
 sentPrint::= writeStr | writeL | writeInt;
@@ -187,25 +197,46 @@ intValue::= NUM MINUS NUM | IDEN | simpleVector;
 
 booleans::= TRUE | FALSE;
 operation::= MULT | MINUS | MAYOR | EQUAL;
-arithmeticExpr::= IDEN operation IDEN PUNTO_COMA;
+arithmeticExpr::= IDEN operation IDEN;
 
 asignValue::= NUM | arithmeticExpr | booleans | IDEN;
 
-bodyOperations::= IDEN ASIGN asignValue PUNTO_COMA | IDEN ASIGN OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA;
+bodyOperations::= IDEN ASIGN asignValue PUNTO_COMA | 
+				  IDEN ASIGN OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA | 
+				  IDEN ASIGN IDEN OPEN_PAR IDEN COMMA IDEN CLOSE_PAR PUNTO_COMA;
 
 simpleVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH;
 vector::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN NUM PUNTO_COMA;
 vectorOperation::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN IDEN OPEN_CORCH NUM CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH CLOSE_CORCH PUNTO_COMA;
 
-
+/*****************************************************************/
+/******************************FUNCIONES**************************/
+/*****************************************************************/
 declarationFuntion::= declarVar declarations IDEN OPEN_PAR declarVar CLOSE_PAR igualations typeOfVar PUNTO_COMA;
 otherFuncionDeclarations::= declarVar;
-beginFunction::= BEGIN bodyOperations RETURN;
-bodyFunction::= bodyOperations | bodyFunction functionReturn;
+beginFunction::= BEGIN bodyOperations RETURN IDEN PUNTO_COMA ends;
+bodyFunction::=  END;
 functionReturn::= RETURN IDEN PUNTO_COMA;
 endFunction::= END IDEN PUNTO_COMA;
 
-function::= declarationFuntion otherFuncionDeclarations beginFunction;
+function::= declarationFuntion otherFuncionDeclarations beginFunction endFunction;
+
+/*****************************************************************/
+/**********************************IF*****************************/
+/*****************************************************************/
+ifCode::= IF logicExpression THEN sentencesIf ELSE sentencesIf ends;
+logicExpression::= IDEN operador IDEN;
+sentencesIf::= bodyOperations;
+
+
+/*****************************************************************/
+/*********************************FOR*****************************/
+/*****************************************************************/
+forCode::= FOR IDEN ASIGN NUM TO finalExpression DO sentencesFor ends;
+finalExpression::= NUM;
+sentencesFor::= sentPrint;
+
+
 
 declarations::= CONST | VAR | TYPE | PROCEDURE;
 igualations::= DOS_PUNTOS | EQUAL;
@@ -213,7 +244,7 @@ typeOfVar::= NUM | INTEGER | BOOLEAN;
 
 array::= ARRAY OPEN_CORCH NUM DOT DOT NUM CLOSE_CORCH OF INTEGER PUNTO_COMA;
 expr::= ID | NUM | expr operador expr | NOT expr;
-operador::= MINUS | MULT | OR | EQUAL;
+operador::= MINUS | MULT | OR | EQUAL | MAYOR;
 declarVar::= declarations IDEN igualations typeOfVar PUNTO_COMA | 
 			 declarVar declarations IDEN igualations typeOfVar PUNTO_COMA |
 			 declarVar declarations IDEN igualations IDEN PUNTO_COMA |
@@ -223,9 +254,9 @@ declarVar::= declarations IDEN igualations typeOfVar PUNTO_COMA |
 			 function;
 
 
+
 /*****************************************************************/
-/*************************Errores*********************************/
+/*******************************ERRORES***************************/
 /*****************************************************************/
 
-endProgram::= END IDEN PUNTO_COMA|error  {:syntaxErrorManager.syntaxError("Error. El programa debe terminar con un END identificador PUNTO_COMA");:};
 
