@@ -137,9 +137,3 @@ fin = "fin"{ESPACIO_BLANCO}
   .|{ESPACIO_BLANCO} {}
   
 }
-
-
-
-                         
-
-

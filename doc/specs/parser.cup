@@ -108,7 +108,10 @@ terminal Token ESPACIO_BLANCO;
 
 non terminal  			program;
 non terminal Axiom		axiom;
-non terminal 			inicio,sentPrint, lambda,cuerpo;
+non terminal 			inicio;
+non terminal			sentPrint;
+non terminal			lambda;
+non terminal			cuerpo;
 non terminal 			fin;
 non terminal			writeStr;
 non terminal			writeL;
@@ -138,7 +141,7 @@ non terminal			endFunction;
 non terminal			initialDeclarations;
 non terminal			functionReturn;
 non terminal			bodyFunction;
-non terminal			otherFuncionDeclarations;
+non terminal			otherFunctionDeclarations;
 non terminal			ends;
 non terminal			ifCode;
 non terminal			logicExpression;
@@ -146,6 +149,12 @@ non terminal			sentencesIf;
 non terminal			forCode;
 non terminal			finalExpression;
 non terminal			sentencesFor;
+non terminal			numOrIden;
+non terminal			parameterFunction;
+non terminal			parameters;
+non terminal			callFunction;
+non terminal			declarVector;
+non terminal			numCharVector;
 // ...
 
 
@@ -176,16 +185,13 @@ program ::=
   		syntaxErrorManager.syntaxInfo ("Parsing process ended.");
    :};
 
-
-ends::= END PUNTO_COMA;
-
-axiom::= inicio BEGIN fin | inicio declarVar BEGIN cuerpo fin | inicio BEGIN cuerpo fin;
+axiom::=inicio declarVar BEGIN cuerpo fin;
 inicio::= MODULE IDEN PUNTO_COMA;
 fin::= END IDEN PUNTO_COMA;
-cuerpo::= sentPrint | bodyOperations | vector | vectorOperation | ifCode | forCode | 
-		  cuerpo bodyOperations | cuerpo sentPrint | cuerpo vector | cuerpo vectorOperation | cuerpo ifCode |
-		  cuerpo forCode;
-
+cuerpo::= lambda | sentPrint cuerpo | bodyOperations cuerpo | 
+		  simpleVector cuerpo | numCharVector cuerpo | declarVector cuerpo |
+		  ifCode cuerpo | forCode cuerpo |
+		  callFunction cuerpo;
 
 sentPrint::= writeStr | writeL | writeInt;
 
@@ -201,32 +207,41 @@ arithmeticExpr::= IDEN operation IDEN;
 
 asignValue::= NUM | arithmeticExpr | booleans | IDEN;
 
-bodyOperations::= IDEN ASIGN asignValue PUNTO_COMA | 
-				  IDEN ASIGN OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA | 
-				  IDEN ASIGN IDEN OPEN_PAR IDEN COMMA IDEN CLOSE_PAR PUNTO_COMA;
+bodyOperations::= IDEN igualations asignValue PUNTO_COMA | 
+				  IDEN igualations OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA | 
+				  IDEN igualations IDEN OPEN_PAR IDEN COMMA IDEN CLOSE_PAR PUNTO_COMA |
+				  vectorOperation;
 
-simpleVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH;
-vector::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN NUM PUNTO_COMA;
+
+/*****************************************************************/
+/******************************VECTOR*****************************/
+/*****************************************************************/
+simpleVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH | IDEN OPEN_CORCH IDEN CLOSE_CORCH;
+numCharVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN NUM PUNTO_COMA | IDEN OPEN_CORCH IDEN CLOSE_CORCH ASIGN NUM PUNTO_COMA;
+declarVector::= IDEN igualations IDEN OPEN_PAR simpleVector CLOSE_PAR PUNTO_COMA; 
 vectorOperation::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN IDEN OPEN_CORCH NUM CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH CLOSE_CORCH PUNTO_COMA;
 
 /*****************************************************************/
 /******************************FUNCIONES**************************/
 /*****************************************************************/
-declarationFuntion::= declarVar declarations IDEN OPEN_PAR declarVar CLOSE_PAR igualations typeOfVar PUNTO_COMA;
-otherFuncionDeclarations::= declarVar;
-beginFunction::= BEGIN bodyOperations RETURN IDEN PUNTO_COMA ends;
-bodyFunction::=  END;
+declarationFuntion::= declarations IDEN OPEN_PAR parameterFunction CLOSE_PAR PUNTO_COMA | declarations IDEN OPEN_PAR parameterFunction CLOSE_PAR igualations typeOfVar PUNTO_COMA;
+beginFunction::= BEGIN cuerpo | BEGIN cuerpo RETURN IDEN PUNTO_COMA;
 functionReturn::= RETURN IDEN PUNTO_COMA;
 endFunction::= END IDEN PUNTO_COMA;
 
-function::= declarationFuntion otherFuncionDeclarations beginFunction endFunction;
+parameters::= IDEN igualations typeOfVar | IDEN igualations typeOfVar PUNTO_COMA;
+parameterFunction::= parameters | parameters parameterFunction;
+
+callFunction::= IDEN OPEN_PAR IDEN CLOSE_PAR PUNTO_COMA;
+
+function::= declarationFuntion declarVar beginFunction endFunction;
 
 /*****************************************************************/
 /**********************************IF*****************************/
 /*****************************************************************/
 ifCode::= IF logicExpression THEN sentencesIf ELSE sentencesIf ends;
-logicExpression::= IDEN operador IDEN;
-sentencesIf::= bodyOperations;
+logicExpression::= IDEN operador numOrIden;
+sentencesIf::= cuerpo;
 
 
 /*****************************************************************/
@@ -234,26 +249,28 @@ sentencesIf::= bodyOperations;
 /*****************************************************************/
 forCode::= FOR IDEN ASIGN NUM TO finalExpression DO sentencesFor ends;
 finalExpression::= NUM;
-sentencesFor::= sentPrint;
+sentencesFor::= cuerpo;
 
 
 
 declarations::= CONST | VAR | TYPE | PROCEDURE;
-igualations::= DOS_PUNTOS | EQUAL;
-typeOfVar::= NUM | INTEGER | BOOLEAN;
+igualations::= DOS_PUNTOS | EQUAL | ASIGN;
+typeOfVar::= NUM | INTEGER | BOOLEAN | array | IDEN;
+numOrIden::= NUM | IDEN;
 
-array::= ARRAY OPEN_CORCH NUM DOT DOT NUM CLOSE_CORCH OF INTEGER PUNTO_COMA;
+
+array::= ARRAY OPEN_CORCH NUM DOT DOT numOrIden CLOSE_CORCH OF INTEGER;
 expr::= ID | NUM | expr operador expr | NOT expr;
 operador::= MINUS | MULT | OR | EQUAL | MAYOR;
-declarVar::= declarations IDEN igualations typeOfVar PUNTO_COMA | 
-			 declarVar declarations IDEN igualations typeOfVar PUNTO_COMA |
-			 declarVar declarations IDEN igualations IDEN PUNTO_COMA |
-			 declarVar IDEN igualations typeOfVar PUNTO_COMA |
-			 declarations IDEN igualations array |
-			 IDEN igualations typeOfVar PUNTO_COMA IDEN igualations typeOfVar|
-			 function;
 
+declarVar::=  lambda |
+			  declarations IDEN igualations typeOfVar PUNTO_COMA declarVar |
+			  IDEN igualations typeOfVar PUNTO_COMA declarVar|
+			  function declarVar;
 
+	
+lambda::= ;
+ends::= END PUNTO_COMA;
 
 /*****************************************************************/
 /*******************************ERRORES***************************/

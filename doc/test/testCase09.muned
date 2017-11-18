@@ -1,0 +1,44 @@
+MODULE nueve;
+
+CONST MAX = 5;
+TYPE Mivector = ARRAY [1..MAX] OF INTEGER;
+VAR i : INTEGER;
+x : BOOLEAN;
+v1 : Mivector;
+
+	PROCEDURE EsMayorQueDos (a:INTEGER): BOOLEAN;
+			VAR dos: INTEGER;
+			result: INTEGER;
+			esMayor : BOOLEAN;
+			
+		PROCEDURE Imprime (numero:INTEGER);
+			BEGIN
+				WRITEINT(numero);
+		END Imprime;
+
+	BEGIN
+
+		dos:=2;
+		result:=a-dos;
+		
+		IF result>2 THEN
+			Imprime(result);
+			esMayor:=TRUE;
+		ELSE
+			esMayor:=FALSE;
+		END;
+
+	RETURN esMayor;
+	END EsMayorQueDos;
+
+BEGIN
+
+	v1[1] := 1;
+	v1[2] := 2;
+	v1[3] := 3;
+
+	FOR i:=1 TO 3 DO
+		x := EsMayorQueDos(v1[i]);
+	END;
+
+END nueve;

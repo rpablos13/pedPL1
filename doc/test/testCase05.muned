@@ -16,5 +16,5 @@ BEGIN
 	WRITEINT(v[1]);
 
 	WRITESTRING("Pos 3:");
-	WRITEINT(v[3])
+	WRITEINT(v[3]);
 END cinco;
