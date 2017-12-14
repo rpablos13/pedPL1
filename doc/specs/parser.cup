@@ -50,8 +50,7 @@ parser code {:
 	}
 :}
 
-// Declaración de terminales (Ejemplo)
-
+// Declaración de Tokens
 terminal Token COMILLAS;
 terminal Token OPEN_PAR;
 terminal Token CLOSE_PAR;
@@ -105,7 +104,6 @@ terminal Token ESPACIO_BLANCO;
 
 // Declaración de no terminales
 // no modificar los propuestos
-
 non terminal  			program;
 non terminal Axiom		axiom;
 non terminal 			inicio;
@@ -155,6 +153,12 @@ non terminal			parameters;
 non terminal			callFunction;
 non terminal			declarVector;
 non terminal			numCharVector;
+non terminal			sentenceVector;
+non terminal			expresion;
+non terminal			operando;
+non terminal			integerExpressions;
+non terminal			expressions;
+
 // ...
 
 
@@ -185,19 +189,24 @@ program ::=
   		syntaxErrorManager.syntaxInfo ("Parsing process ended.");
    :};
 
+   
+//Estructura del programa (Inicio, cuerpo, fin)
 axiom::=inicio declarVar BEGIN cuerpo fin;
 inicio::= MODULE IDEN PUNTO_COMA;
 fin::= END IDEN PUNTO_COMA;
 cuerpo::= lambda | sentPrint cuerpo | bodyOperations cuerpo | 
-		  simpleVector cuerpo | numCharVector cuerpo | declarVector cuerpo |
 		  ifCode cuerpo | forCode cuerpo |
 		  callFunction cuerpo;
 
+
+
+//Imprimir por pantalla
 sentPrint::= writeStr | writeL | writeInt;
 
 writeStr::= WRITESTRING OPEN_PAR STRING CLOSE_PAR PUNTO_COMA;
 writeL::= WRITELN PUNTO_COMA;
-writeInt::= WRITEINT OPEN_PAR intValue CLOSE_PAR PUNTO_COMA;
+writeInt::= WRITEINT OPEN_PAR integerExpressions CLOSE_PAR PUNTO_COMA;
+
 
 intValue::= NUM MINUS NUM | IDEN | simpleVector;
 
@@ -209,17 +218,21 @@ asignValue::= NUM | arithmeticExpr | booleans | IDEN;
 
 bodyOperations::= IDEN igualations asignValue PUNTO_COMA | 
 				  IDEN igualations OPEN_PAR IDEN OR IDEN CLOSE_PAR PUNTO_COMA | 
-				  IDEN igualations IDEN OPEN_PAR IDEN COMMA IDEN CLOSE_PAR PUNTO_COMA |
-				  vectorOperation;
+				  IDEN igualations IDEN OPEN_PAR IDEN COMMA IDEN CLOSE_PAR PUNTO_COMA | 
+				  sentenceVector;
+
+integerExpressions::= expresion;
 
 
 /*****************************************************************/
 /******************************VECTOR*****************************/
 /*****************************************************************/
-simpleVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH | IDEN OPEN_CORCH IDEN CLOSE_CORCH;
-numCharVector::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN NUM PUNTO_COMA | IDEN OPEN_CORCH IDEN CLOSE_CORCH ASIGN NUM PUNTO_COMA;
-declarVector::= IDEN igualations IDEN OPEN_PAR simpleVector CLOSE_PAR PUNTO_COMA; 
-vectorOperation::= IDEN OPEN_CORCH NUM CLOSE_CORCH ASIGN IDEN OPEN_CORCH NUM CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH operation IDEN OPEN_CORCH IDEN OPEN_CORCH IDEN OPEN_CORCH NUM CLOSE_CORCH CLOSE_CORCH CLOSE_CORCH PUNTO_COMA;
+sentenceVector ::= vector ASIGN expresion PUNTO_COMA;
+vector::= IDEN OPEN_CORCH expresion CLOSE_CORCH;
+expresion::= operando MULT expresion | operando MINUS expresion | operando;
+operando::= NUM | IDEN | vector;
+
+
 
 /*****************************************************************/
 /******************************FUNCIONES**************************/

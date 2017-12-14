@@ -26,11 +26,12 @@ import es.uned.lsi.compiler.lexical.LexicalErrorManager;
 %{
     LexicalErrorManager lexicalErrorManager = new LexicalErrorManager ();
     private int commentCount = 0;
-      int linecom=0;
-      int columncom=0;
-      int contadorstring=0;
+    private int linecom=0;
+    private int columncom=0;
+    private int contadorstring=0;
       
-      //Funcion para crear tokens
+    
+    //Función para crear los Tokens
     Token createToken (int x)  {
        Token token = new Token (x);
           token.setLine (yyline + 1);
@@ -38,6 +39,8 @@ import es.uned.lsi.compiler.lexical.LexicalErrorManager;
           token.setLexema (yytext ());
           return token;}  
     
+    
+    //Función para crear un Error
     LexicalError createError(String mensaje){
       LexicalError error = new LexicalError (mensaje);
       error.setLine (yyline + 1);
@@ -49,11 +52,13 @@ import es.uned.lsi.compiler.lexical.LexicalErrorManager;
     }
 %}
 
+
+ESPACIO_BLANCO=[ \t\r\n\f]
+fin = "fin"{ESPACIO_BLANCO}
 NUM= (0 | [1-9][0-9]*)
 STRING = \".*\"
 IDEN=[A-Za-z] ([A-Za-z] | [0-9])*
-ESPACIO_BLANCO=[ \t\r\n\f]
-fin = "fin"{ESPACIO_BLANCO}
+
 
 %x COMMENT
 
@@ -67,8 +72,7 @@ fin = "fin"{ESPACIO_BLANCO}
     ")"                { return createToken(sym.CLOSE_PAR); }
     "["                { return createToken(sym.OPEN_CORCH); }
     "]"                { return createToken(sym.CLOSE_CORCH); }
-    "(*"                { commentCount++;
-                yybegin(COMMENT);}
+    "(*"                { commentCount++; yybegin(COMMENT);}
     "*)"               {lexicalErrorManager.lexicalError(createError("Error Lexico. No existe apertura en la Línea: "+(yyline + 1)));}
     ","                { return createToken(sym.COMMA); }
     ";"                { return createToken(sym.PUNTO_COMA); }
@@ -112,8 +116,6 @@ fin = "fin"{ESPACIO_BLANCO}
    //Expresiones
    
 {fin} {}
-
-
 {NUM} {return createToken (sym.NUM);}
 {STRING}  {return createToken (sym.STRING);}
 {IDEN}  {return createToken (sym.IDEN);}
