@@ -158,6 +158,27 @@ non terminal			expresion;
 non terminal			operando;
 non terminal			integerExpressions;
 non terminal			expressions;
+non terminal			declarConstants;
+non terminal			expressionConstant;
+non terminal			valueConstant;
+non terminal			declarVar1;
+non terminal			typeOfVariable;
+non terminal			nameVar;
+non terminal			firstDeclarVar;
+non terminal			secondDeclarVar;
+non terminal			declarTypes;
+non terminal			typeOfDeclarTypes;
+non terminal			styleDeclarTypes;
+non terminal			subProgramDeclar;
+non terminal			firstPartSubprogram;
+non terminal			typeOfFunction;
+non terminal			secondPartFunction;
+non terminal			endSubprogram;
+non terminal			typeOfSubprogram;
+non terminal			beginSubprogram;
+non terminal			endSubprogramDeclar;
+non terminal			moreSubprogram;
+
 
 // ...
 
@@ -191,7 +212,17 @@ program ::=
 
    
 //Estructura del programa (Inicio, cuerpo, fin)
-axiom::=inicio declarVar BEGIN cuerpo fin;
+   
+//Primera parte del programa: Declaración de variables y tipos
+axiom::=inicio declarConstants 
+			   declarTypes 
+			   declarVar 
+			   subProgramDeclar 
+			   BEGIN cuerpo 
+         fin;
+
+
+
 inicio::= MODULE IDEN PUNTO_COMA;
 fin::= END IDEN PUNTO_COMA;
 cuerpo::= lambda | sentPrint cuerpo | bodyOperations cuerpo | 
@@ -233,11 +264,11 @@ expresion::= operando MULT expresion | operando MINUS expresion | operando;
 operando::= NUM | IDEN | vector;
 
 
-
+//Sin terminar, no se llama desde ningún lado
 /*****************************************************************/
 /******************************FUNCIONES**************************/
 /*****************************************************************/
-declarationFuntion::= declarations IDEN OPEN_PAR parameterFunction CLOSE_PAR PUNTO_COMA | declarations IDEN OPEN_PAR parameterFunction CLOSE_PAR igualations typeOfVar PUNTO_COMA;
+declarationFuntion::= IDEN OPEN_PAR parameterFunction CLOSE_PAR PUNTO_COMA | declarations IDEN OPEN_PAR parameterFunction CLOSE_PAR igualations typeOfVar PUNTO_COMA;
 beginFunction::= BEGIN cuerpo | BEGIN cuerpo RETURN IDEN PUNTO_COMA;
 functionReturn::= RETURN IDEN PUNTO_COMA;
 endFunction::= END IDEN PUNTO_COMA;
@@ -248,6 +279,7 @@ parameterFunction::= parameters | parameters parameterFunction;
 callFunction::= IDEN OPEN_PAR IDEN CLOSE_PAR PUNTO_COMA;
 
 function::= declarationFuntion declarVar beginFunction endFunction;
+
 
 /*****************************************************************/
 /**********************************IF*****************************/
@@ -266,6 +298,37 @@ sentencesFor::= cuerpo;
 
 
 
+//ESTRUCTURA QUE DEBE SEGUIR EL PROGRAMA AL INICIO
+//Declaración de Constantes
+declarConstants::= lambda | CONST expressionConstant;
+expressionConstant::= IDEN EQUAL valueConstant PUNTO_COMA | IDEN EQUAL valueConstant PUNTO_COMA expressionConstant;
+
+valueConstant::= NUM | booleans;
+
+//Declaración de Tipos
+declarTypes ::= lambda | TYPE IDEN EQUAL typeOfDeclarTypes PUNTO_COMA declarTypes;
+typeOfDeclarTypes::= styleDeclarTypes | array;
+styleDeclarTypes::= INTEGER | booleans;
+			
+//Declaración de Variables
+declarVar ::= lambda | firstDeclarVar secondDeclarVar;
+firstDeclarVar::= VAR nameVar DOS_PUNTOS typeOfVariable PUNTO_COMA;
+secondDeclarVar::= lambda | nameVar DOS_PUNTOS typeOfVariable PUNTO_COMA secondDeclarVar;
+nameVar::= IDEN | IDEN COMMA  | IDEN COMMA nameVar;
+typeOfVariable::= INTEGER | booleans | IDEN | BOOLEAN; 
+
+
+//Declaración de subprogramas
+subProgramDeclar::= lambda | PROCEDURE IDEN OPEN_PAR firstPartSubprogram CLOSE_PAR typeOfSubprogram PUNTO_COMA declarVar beginSubprogram endSubprogram subProgramDeclar;
+firstPartSubprogram::= lambda | IDEN COMMA firstPartSubprogram | IDEN DOS_PUNTOS typeOfFunction firstPartSubprogram | IDEN DOS_PUNTOS typeOfFunction PUNTO_COMA firstPartSubprogram;
+typeOfFunction::= INTEGER | booleans | IDEN ;
+typeOfSubprogram::= lambda | DOS_PUNTOS typeOfFunction;
+
+
+beginSubprogram::= BEGIN cuerpo RETURN IDEN PUNTO_COMA;
+endSubprogram::= END IDEN PUNTO_COMA;
+
+
 declarations::= CONST | VAR | TYPE | PROCEDURE;
 igualations::= DOS_PUNTOS | EQUAL | ASIGN;
 typeOfVar::= NUM | INTEGER | BOOLEAN | array | IDEN;
@@ -276,10 +339,6 @@ array::= ARRAY OPEN_CORCH NUM DOT DOT numOrIden CLOSE_CORCH OF INTEGER;
 expr::= ID | NUM | expr operador expr | NOT expr;
 operador::= MINUS | MULT | OR | EQUAL | MAYOR;
 
-declarVar::=  lambda |
-			  declarations IDEN igualations typeOfVar PUNTO_COMA declarVar |
-			  IDEN igualations typeOfVar PUNTO_COMA declarVar|
-			  function declarVar;
 
 	
 lambda::= ;

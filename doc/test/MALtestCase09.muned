@@ -14,6 +14,7 @@ v1 : Mivector;
 		PROCEDURE Imprime (numero:INTEGER);
 			BEGIN
 				WRITEINT(numero);
+				RETURN 
 		END Imprime;
 
 	BEGIN
