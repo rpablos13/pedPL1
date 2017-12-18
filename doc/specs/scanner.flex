@@ -134,8 +134,20 @@ IDEN=[A-Za-z] ([A-Za-z] | [0-9])*
 <COMMENT>{
   "(*" {commentCount++;}
   "*)" {commentCount--;
-    if(commentCount == 0) yybegin(YYINITIAL);
-  }
-  .|{ESPACIO_BLANCO} {}
   
-}
+  if (commentCount>0) {
+		LexicalError error = new LexicalError();
+		error.setLine (yyline + 1);
+		error.setColumn (yycolumn + 1);
+		error.setLexema (yytext ());
+		lexicalErrorManager.lexicalError ("No se han cerrado debidamente " + commentCount + " comentarios. Error: " + error);							
+	} else if (commentCount == 0) {
+    	yybegin(YYINITIAL);
+    }
+  }
+  
+
+  
+  .|{ESPACIO_BLANCO} {}
+  }
+
